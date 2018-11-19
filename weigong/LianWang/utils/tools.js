@@ -45,5 +45,34 @@ module.exports = {
     }
     
     return result;
-  }
+  },
+     //写入数据
+    writeFileAsync (filePath,data) {
+        return new Promise((resolve, reject) => {
+          writeFile(filePath,JSON.toString(data), err =>{
+            if (!err){
+              resolve;
+            }else {
+              reject('writeFileAsync方法出了问题：' + err)
+            }
+          })
+        })
+    },
+    //读出数据
+    readFileAsync (filePath) {
+        return new Promise((resolve, reject) => {
+            readFile(filePath, (err, data) => {
+                //读取的data数据  二进制数据，buffer
+                if (!err) {
+                    //先调用toString转化为json字符串
+                    //在调用JSON.parse将json字符串解析为js对象
+                    resolve(JSON.parse(data.toString()));
+                } else {
+                    reject('readFileAsync方法出了问题:' + err);
+                }
+            })
+        })
+
+    }
+
 }

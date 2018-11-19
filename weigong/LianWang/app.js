@@ -1,5 +1,11 @@
 const express = require('express');
 const handleRequest = require('./reply/handleRequest');
+const Wechat = require('./wechat/wechat');
+const {url,appID} = require('./config')
+const sha1 = require('sha1');
+
+
+const wechat = new Wechat();
 
 const app = express();
 /*
@@ -17,8 +23,50 @@ const app = express();
     - 加密后的到的就是微信签名，将其与微信发送过来的微信签名对比，
       - 如果一样，说明消息来自于微信服务器，返回echostr给微信服务器
       - 如果不一样，说明消息不是微信服务器发送过来的，返回error
-    
  */
+
+
+app.set('views','views');
+app.set('views engine', 'ejs');
+
+//创建微信签名用法
+app.use('/search', async (req,res) => {
+
+  /*
+   微信签名算法：
+   1. 得到参与签名的字段包括noncestr（随机字符串）,
+   有效的jsapi_ticket, timestamp（时间戳）, url（当前网页的URL，不包含#及其后面部分）
+   2. 对所有待签名参数按照字段名的ASCII 码从小到大排序（字典序）后，
+   使用URL键值对的格式（即key1=value1&key2=value2…）拼接成字符串string1
+   3. 这里需要注意的是所有参数名均为小写字符。对string1作sha1加密，字段名和字段值都采用原始值，
+   不进行URL 转义。
+   */
+   //获得临时票据
+    const {ticket} = await wechat.fetchTicket();
+    //随机字符串
+    const  noncestr = Math.random().toString().split('.')[1];
+    //生成时间戳
+    const timetimpe = parseInt(Date.now()/1000);
+    //将四个参数key = value 的方式组合一个数组
+    const arr = [
+        `noncestr=${noncestr}`,
+        `jsapi_ticket=${ticket}`,
+        `timestamp=${timestamp}`,
+        `url=${url}/search`
+    ]
+    const signature = sha1(arr.sort().join('&'));
+     res.render( 'search',{
+         signature,
+         timetimpe,
+         noncestr,
+         appID
+         });
+
+})
+
+
+
+
 
 app.use(handleRequest());
 

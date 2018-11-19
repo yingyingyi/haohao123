@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>search</title>
+</head>
+<body>
+<h2>语音识别功能</h2>
+<script type="text/javascript" src="https://cdn.bootcss.com/zepto/1.0rc1/zepto.min.js"></script>
+<script type="text/javascript" src="http://res2.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+<script>
+    /*
+     步骤一：绑定域名
+     在测试号管理页面绑定JS接口安全域名， 注意只需要域名部分，协议部分去掉
+     步骤二：引入JS文件
+     http://res2.wx.qq.com/open/js/jweixin-1.4.0.js
+     步骤三：通过config接口注入权限验证配置
+     */
+
+    $(function () {
+        //验证是否有权限使用此接口
+        wx.config({
+            debug:true,
+            appId:'<%= appID %>',
+            timestamp:'<%= timestamp %>',
+            nonceStr:'<%= noncestr%>',
+            signature:'<%= signature%>',
+            jsAiList:[
+                'updateAppMessageShareData',
+                'updateTimelineShareData',
+                'startRecord',
+                'stopRecord',
+                'translateVoice'
+            ]
+        });
+                 //验证通过会触发当前的回调函数
+           wx.ready(function () {
+               // config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，
+               // config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。
+               // 对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。
+              let isRecord = false;
+               $('btn').tap(function () {
+                   if(!isRecord){
+                      //开始录音
+                       wx.startRecord();
+                       isRecord = true;
+                   }else {
+                       wx.stopRecord({
+                           success:function (res) {
+                               //本地录音文件
+                               const localId = res.localId;
+                               //语音识别
+                               wx.translateVoice({
+                                   localId: localId, // 需要识别的音频的本地Id，由录音相关接口获得
+                                   isShowProgressTips: 1, // 默认为1，显示进度提示
+                                   success: function (res) {
+                                       alert(res.translateResult); // 语音识别的结果
+                                   }
+                               });
+                               sRecord = false;
+                           }
+                       })
+                   }
+               })
+
+           }) 
+
+        
+    })
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+
+
+</script>
+
+</body>
+</html>
